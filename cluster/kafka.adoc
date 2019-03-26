@@ -1,0 +1,14 @@
+* 参考文章
+
+http://blog.csdn.net/zwgdft/article/details/54633105
+http://www.sohu.com/a/145359159_747818
+http://kafka.apachecn.org/documentation.html   中文指南
+
+
+
+
+[source,java]
+.kafka启动,进入bin目录下
+----
+./kafka-server-start.sh  ../config/server.properties
+----

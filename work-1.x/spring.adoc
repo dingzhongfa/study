@@ -1,0 +1,15 @@
+= spring 框架踩坑记录
+
+=== `@Validated` 注解
+
+* 在Spring Controller类里，`@Validated` 注解初使用会比较不易上手，在此做下总结
+
+. 对于基本数据类型和String类型，要使校验的注解生效，需在该类上方加 `@Validated` 注解
+. 对于抽象数据类型，需在形式参数前加``@Validated``注解
+
+TIP: spring对抽象数据类型校验抛出异常为``MethodArgumentNotValidException``，http状态码为400，对基本数据类型校验抛出异常为``ConstraintViolationException``，http状态码为500
+
+[source,java]
+.使用方式
+----
+----

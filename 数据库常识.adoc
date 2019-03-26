@@ -1,0 +1,26 @@
+== MySQL分支的选择：Percona还是MariaDB
+在MySQL被Oracle收购以后，越来越多的人对于MySQL的前景表示了担忧，对于开源的MySQL，或多或少对于Oracle自家的数据库产品产生冲击，这个开源免费的MySQL 对于Oracle更多的是包袱而不是资产。比如淘宝就从Oracle转成了MySQL，一些大型互联网公司也在推行去IOE(I:IBM,O:Oracle,E:EMC)，甲骨文公司收购了MySQL后，有将MySQL闭源的潜在风险，因此社区采用分支的方式来避开这个风险。
+
+* Percona
+
+====
+在介绍 Percona 之前，首要要介绍的是XtraDB存储引擎，在MYSQL中接触比较多的是MyISAM和InnoDB这两个存储引擎，先前的文章：《MySQL MyISAM和InnoDB的区别》也进行了详细的介绍。
+MySQL 4和5使用默认的MyISAM存储引擎安装每个表。从5.5开始，MySQL已将默认存储引擎从MyISAM更改为InnoDB。MyISAM没有提供事务支持，而InnoDB提供了事务支持。与MyISAM相比，InnoDB提供了许多细微的性能改进，并且在处理潜在的数据丢失时提供了更高的可靠性和安全性。
+Percona XtraDB 是 InnoDB 存储引擎的增强版，被设计用来更好的使用更新计算机硬件系统的性能，同时还包含有一些在高性能环境下的新特性。XtraDB 存储引擎是完全的向下兼容，在 MariaDB 中，XtraDB 存储引擎被标识为”ENGINE=InnoDB”，这个与 InnoDB 是一样的，所以你可以直接用XtraDB 替换掉 InnoDB 而不会产生任何问题。Percona XtraDB 包含有所有 InnoDB’s 健壮性，可依赖的 ACID 兼容设计和高级 MVCC 架构。XtraDB 在 InnoDB 的坚实基础上构建，使 XtraDB 具有更多的特性，更好调用，更多的参数指标和更多的扩展。从实践的角度来看，XtraDB 被设计用来在多核心的条件下更有效的使用内存和更加方便，更加可用。新的特性被用来降低 InnoDB 的局限性。性能层面，XtraDB与内置的MySQL 5.1 InnoDB 引擎相比，它每分钟可处理2.7倍的事务。
+Percona Server由领先的MySQL咨询公司Percona发布。Percona Server是一款独立的数据库产品，其可以完全与MySQL兼容，可以在不更改代码的情况了下将存储引擎更换成XtraDB 。
+Percona团队的最终声明是“Percona Server是由Oracle发布的最接近官方MySQL Enterprise发行版的版本”，因此与其他更改了大量基本核心MySQL代码的分支有所区别。Percona Server的一个缺点是他们自己管理代码，不接受外部开发人员的贡献，以这种方式确保他们对产品中所包含功能的控制。
+官网地址：http://www.percona.com/
+====
+
+* MariaDB
+
+====
+MariaDB由MySQL的创始人麦克尔·维德纽斯主导开发，他早前曾以10亿美元的价格，将自己创建的公司MySQL AB卖给了SUN，此后，随着SUN被甲骨文收购，MySQL的所有权也落入Oracle的手中。MariaDB名称来自麦克尔·维德纽斯的女儿玛丽亚（英语：Maria）的名字。
+MariaDB的目的是完全兼容MySQL，包括API和命令行，使之能轻松成为MySQL的代替品。在存储引擎方面，10.0.9版起使用XtraDB（名称代号为Aria）来代替MySQL的InnoDB。
+版本方面，MariaDB直到5.5版本，均依照MySQL的版本。因此，使用MariaDB5.5的人会从MySQL 5.5中了解到MariaDB的所有功能。从2012年11月12日起发布的10.0.0版开始，不再依照MySQL的版号。10.0.x版以5.5版为基础，加上移植自MySQL 5.6版的功能和自行开发的新功能。
+相对于最新的MySQL5.6，MariaDB在性能、功能、管理、NoSQL扩展方面包含了更丰富的特性。比如微秒的支持、线程池、子查询优化、组提交、进度报告等。
+官网地址：https://mariadb.org/
+====
+
+Percona OR MariaDB
+选择是一件痛苦的事情，对于上面的两个数据库，就是大公司也存在分歧，就像淘宝目前使用的是Percona 5.5.18，而Google\Wikipedia则站在了MariaDB这边。具体哪一个会走的更远，我们就拭目以待吧。

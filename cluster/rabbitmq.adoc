@@ -1,0 +1,69 @@
+= rabbit性能分析
+
+* 参考文章
+
+  http://blog.csdn.net/zwgdft/article/details/53561277
+  https://blog.csdn.net/dandanzmc/article/details/52262850
+  https://blog.slogra.com/post-301.html
+
+
+== 基本配置
+
+* 添加用户
+
+ rabbitmqctl add_user Username 123456
+
+* 删除用户
+
+ rabbitmqctl  delete_user  Username
+
+* 查看所有用户
+
+ rabbitmqctl  list_users
+
+* 设置超级管理员权限
+ rabbitmqctl set_user_tags Username administrator
+
+* 创建命名空间
+
+ rabbitmqctl add_vhost /vhost
+
+* 为用户赋权
+
+ rabbitmqctl  set_permissions -p /vhost Username '.*' '.*' '.*'
+
+* 查看(指定hostpath)所有用户的权限信息
+
+  rabbitmqctl  list_permissions  [-p  VHostPath]
+
+* 查看指定用户的权限信息
+
+  rabbitmqctl  list_user_permissions  User
+
+*  清除用户的权限信息
+
+  rabbitmqctl  clear_permissions  [-p VHostPath]  User
+
+== 角色
+
+* 超级管理员(administrator)
+
+ 可登陆管理控制台(启用management plugin的情况下)，可查看所有的信息，并且可以对用户，策略(policy)进行操作。
+
+* 监控者(monitoring)
+
+ 可登陆管理控制台(启用management plugin的情况下)，同时可以查看rabbitmq节点的相关信息(进程数，内存使用情况，磁盘使用情况等)
+
+* 策略制定者(policymaker)
+
+ 可登陆管理控制台(启用management plugin的情况下), 同时可以对policy进行管理。但无法查看节点的相关信息(上图红框标识的部分)。
+
+* 普通管理者(management)
+
+ 仅可登陆管理控制台(启用management plugin的情况下)，无法看到节点信息，也无法对策略进行管理。
+
+* 其他
+
+ 无法登陆管理控制台，通常就是普通的生产者和消费者。
+
+ == 如何防止消息丢失

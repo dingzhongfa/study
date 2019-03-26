@@ -1,0 +1,15 @@
+@startuml
+
+title 活动图
+
+start
+
+:开始;
+note left: 活动标签
+
+if() then (yes)
+
+endif
+stop
+
+@enduml

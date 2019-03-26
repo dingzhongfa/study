@@ -1,0 +1,13 @@
+@startuml
+
+title ding-transaction事务处理流程
+
+h5->service_A:请求接入
+service_A->service_B:A调B服务
+service_B ->redis:设置过期时间15min(默认)，调用接口及参数信息、重试次数5次(默认)存入redis
+transaction_server -->redis:每两分钟起一个线程轮询处理
+transaction_server -->redis:处理成功，删除缓存;处理失败,增加次数
+transaction_server -->mariaDB:五次均失败则放入数据库
+
+
+@enduml

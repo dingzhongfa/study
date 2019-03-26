@@ -1,0 +1,69 @@
+= 二叉树合集
+
+== 定义
+
+=== 二叉查找树
+二叉排序树或者是一棵空树，或者是具有下列性质的二叉树：
+
+. 若左子树不空，则左子树上所有结点的值均小于或等于它的根结点的值；
+. 若右子树不空，则右子树上所有结点的值均大于或等于它的根结点的值；
+. 左、右子树也分别为二叉排序树；
+
+=== 笛卡尔树（无用处）
+
+笛卡尔树是一棵二叉树，树的每个节点有两个值，一个为key，一个为value。光看key的话，笛卡尔树是一棵二叉搜索树，每个节点的左子树的key都比它小，右子树都比它大；光看value的话，笛卡尔树有点类似堆，根节点的value是最小（或者最大）的，每个节点的value都比它的子树要小（或者大）。
+
+=== 红黑树
+
+自平衡二叉树，保持二叉查找树的平衡，从而获得较高的查找性能。
+
+.性质
+. 节点是红色或黑色。
+. 根节点是黑色。
+. 每个叶节点（NIL节点，空节点）是黑色的。
+. 每个红色节点的两个子节点都是黑色。(从每个叶子到根的所有路径上不能有两个连续的红色节点)
+. 从任一节点到其每个叶子的所有路径都包含相同数目的黑色节点。
+
+== 深入
+=== 红黑树
+
+
+[source,java]
+.TreeMap中左旋和右旋代码
+----
+//Rotate Left
+private void rotateLeft(Entry<K,V> p) {
+    if (p != null) {
+        Entry<K,V> r = p.right;
+        p.right = r.left;
+        if (r.left != null)
+            r.left.parent = p;
+        r.parent = p.parent;
+        if (p.parent == null)
+            root = r;
+        else if (p.parent.left == p)
+            p.parent.left = r;
+        else
+            p.parent.right = r;
+        r.left = p;
+        p.parent = r;
+    }
+}
+
+//Rotate Right
+private void rotateRight(Entry<K,V> p) {
+    if (p != null) {
+        Entry<K,V> l = p.left;
+        p.left = l.right;
+        if (l.right != null) l.right.parent = p;
+        l.parent = p.parent;
+        if (p.parent == null)
+            root = l;
+        else if (p.parent.right == p)
+            p.parent.right = l;
+        else p.parent.left = l;
+        l.right = p;
+        p.parent = l;
+    }
+}
+----

@@ -1,0 +1,6 @@
+.删除远程分支
+命令：$ git push origin 【空格】【冒号】【你的分支名字】 +
+比如我github上有master和feature分支，我现在想着删除feature分支，命令如下：
+----
+$ git push origin :feature
+----

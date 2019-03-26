@@ -1,0 +1,185 @@
+= 分布式系统调用监控 -（整合spring cloud sleuth 、zipkin、kafka、elasticsearch）
+
+在微服务架构体系中，随着业务扩张，模块之间调用日益错综复杂，一个请求流程可能涉及到十多个甚至数十个的服务。这对我们进行错误排查及性能分析产生了阻碍。
+
+分布式系统监控就是对每一次请求进行跟踪，进而明确每个请求所经过的应用、耗时等信息。本文我们整合spring cloud sleuth,zipkin,kafka,elasticsearch做简单的分布式监控架构搭建
+
+== 软件安装
+
+ 我们先安装所需软件，这里为方便读者，简单罗列下各个软件的简单使用步骤
+
+=== zookeeper
+
+. 安装  点击链接``https://archive.apache.org/dist/zookeeper/``选取版本自行下载
+. 运行后台启动命令（直接单节点启动）
+
+.进入bin目录，启动、停止、重启分和查看当前节点状态（包括集群中是何角色）别执行：
+----
+./zkServer.sh start
+./zkServer.sh stop
+./zkServer.sh restart
+./zkServer.sh status
+----
+
+=== kafka
+
+. 安装 点击链接``http://kafka.apache.org/downloads``选取版本自行下载
+. 运行后台启动命令（直接单节点启动）
+----
+sudo bin/kafka-server-start.sh config/server.properties
+----
+
+=== elasticsearch
+
+. 安装 点击链接``https://www.elastic.co/downloads/past-releases``选取版本自行下载
+. 运行后台启动命令（直接单节点启动）
+
+.进入安装文件夹
+ ----
+ bin/elasticsearch &
+ ----
+
+== 服务搭建
+在parent依赖管理项目中，我们先统一管理spring boot、spring cloud版本号及各个maven profile
+[source,xml]
+.版本管理
+----
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>1.5.10.RELEASE</version>
+</parent>
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-dependencies</artifactId>
+            <version>Dalston.SR5</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
+=== zipkin-server
+
+我们先搭建zipkin应用程序模块,这里顺便说下其他方式的依赖和配置。值得注意的是，开源项目的版本变更会在使用上有很大区别，大家在切换版本时还需要自己多注意。
+
+[source.java]
+.启动类
+----
+@SpringBootApplication
+@EnableZipkinStreamServer
+//@EnableZipkinServer          以http传输数据时使用该注解
+public class ZipkinServerApplication {
+
+    public static void main(String[] args) {
+        new SpringApplicationBuilder(ZipkinServerApplication.class).run(args);
+    }
+}
+----
+
+[source,xml]
+.zipkin相关依赖
+----
+<dependencies>
+    <!-- 直接以http传输 -->
+    <!--<dependency>
+        <groupId>io.zipkin.java</groupId>
+        <artifactId>zipkin-server</artifactId>
+        <version>2.7.4</version>
+    </dependency>-->
+    <!-- mq传输 -->
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-sleuth-stream</artifactId>
+    </dependency>
+    <!-- 使用rabbitmq传输 -->
+    <!--<dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-stream-rabbit</artifactId>
+    </dependency>-->
+    <!-- 使用kafka传输 -->
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-stream-kafka</artifactId>
+    </dependency>
+    <!-- zipkin ui 模块，这里我们选取2.7.4版本，可与2.2.2版本的server兼容 -->
+    <dependency>
+        <groupId>io.zipkin.java</groupId>
+        <artifactId>zipkin-autoconfigure-ui</artifactId>
+        <scope>runtime</scope>
+        <version>2.7.4</version>
+    </dependency>
+    <!-- 数据库配置 -->
+    <!--<dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-jdbc</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+    </dependency>-->
+    <!-- 保存到数据库需要如下依赖 -->
+    <!-- 添加 spring-data-elasticsearch的依赖 -->
+    <dependency>
+        <groupId>io.zipkin.java</groupId>
+        <artifactId>zipkin-autoconfigure-storage-elasticsearch-http</artifactId>
+        <optional>true</optional>
+        <version>2.2.2</version>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+</dependencies>
+----
+
+[source,yml]
+.基本配置项
+----
+server:
+  port: 9411
+spring:
+  application:
+    name: ding-zipkin
+    #spring boot数据源配置
+#  datasource:
+#    url: jdbc:mysql://127.0.0.1:3306/zipkin?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+#    username: root
+#    password: 123456
+#    driver-class-name: com.mysql.jdbc.Driver
+#    initialize: true
+#    continue-on-error: false
+#    type: com.alibaba.druid.pool.DruidDataSource
+  #rabbitmq配置
+#  rabbitmq:
+#    host: 127.0.0.1
+#    port: 5672
+#    username: ding
+#    password: ding
+#    virtual-host: /ding
+  sleuth:
+    annotation:
+      enabled: false #mq方式设置为false
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: 127.0.0.1:9092
+          zkNodes: 127.0.0.1:2181
+zipkin:
+  storage:
+    StorageComponent: elasticsearch
+    type: elasticsearch
+    elasticsearch:
+      hosts: 127.0.0.1:9200
+----
+
+===
+
+
+
+
+
